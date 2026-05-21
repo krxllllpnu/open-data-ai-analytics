@@ -14,4 +14,4 @@ The dataset contains sepal and petal measurements for three Iris species: setosa
 
 1. Virginica is expected to have the largest average petal length and petal width.
 2. The dataset is expected to have no missing values and very few duplicate records.
-3. Species-level measurement summaries should clearly separate setosa from the other species.
+3. How strongly are petal length and petal width related across all observations?
