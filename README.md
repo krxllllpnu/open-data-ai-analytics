@@ -10,8 +10,8 @@ Dataset: [Iris Species CSV from the public seaborn-data repository](https://raw.
 
 The dataset contains sepal and petal measurements for three Iris species: setosa, versicolor, and virginica.
 
-## Research Questions
+## Analysis Questions
 
-1. Which Iris species has the largest average petal length and petal width?
-2. Are there missing values or duplicate records that could affect the analysis?
-3. Can simple measurement summaries show clear differences between Iris species?
+1. Which species has the highest average sepal and petal measurements?
+2. How many missing values, duplicated rows, and unexpected column types are present?
+3. How strongly are petal length and petal width related across all observations?
