@@ -1,0 +1,23 @@
+Iris Research Analysis
+======================
+Rows analyzed: 150
+
+Average measurements by species:
+- setosa:
+  - average sepal_length: 5.01
+  - average sepal_width: 3.43
+  - average petal_length: 1.46
+  - average petal_width: 0.25
+- versicolor:
+  - average sepal_length: 5.94
+  - average sepal_width: 2.77
+  - average petal_length: 4.26
+  - average petal_width: 1.33
+- virginica:
+  - average sepal_length: 6.59
+  - average sepal_width: 2.97
+  - average petal_length: 5.55
+  - average petal_width: 2.03
+
+Petal length and width correlation: 0.963
+Species with largest average petal length: virginica
