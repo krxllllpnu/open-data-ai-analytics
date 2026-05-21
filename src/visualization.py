@@ -5,6 +5,12 @@ from collections import defaultdict
 from pathlib import Path
 from statistics import mean
 
+import matplotlib
+
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
+
 
 PROCESSED_FILE = Path("data/processed/iris_processed.csv")
 FIGURES_DIR = Path("reports/figures")
@@ -38,74 +44,46 @@ def save_bar_chart(groups: dict[str, list[dict[str, str]]]) -> Path:
         species: mean(float(row["petal_length"]) for row in species_rows)
         for species, species_rows in groups.items()
     }
-    width, height = 760, 460
-    chart_left, chart_bottom = 90, 380
-    chart_height, bar_width = 280, 110
-    max_value = max(averages.values())
-    parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
-        '<rect width="100%" height="100%" fill="#ffffff"/>',
-        '<text x="380" y="42" text-anchor="middle" font-family="Arial" font-size="24" font-weight="700">Average Petal Length by Species</text>',
-        f'<line x1="{chart_left}" y1="80" x2="{chart_left}" y2="{chart_bottom}" stroke="#333"/>',
-        f'<line x1="{chart_left}" y1="{chart_bottom}" x2="690" y2="{chart_bottom}" stroke="#333"/>',
-    ]
-    for index, (species, value) in enumerate(averages.items()):
-        bar_height = int((value / max_value) * chart_height)
-        x = chart_left + 90 + index * 185
-        y = chart_bottom - bar_height
-        color = COLORS.get(species, "#555555")
-        parts.extend(
-            [
-                f'<rect x="{x}" y="{y}" width="{bar_width}" height="{bar_height}" fill="{color}"/>',
-                f'<text x="{x + bar_width / 2}" y="{y - 10}" text-anchor="middle" font-family="Arial" font-size="16">{value:.2f}</text>',
-                f'<text x="{x + bar_width / 2}" y="414" text-anchor="middle" font-family="Arial" font-size="16">{species}</text>',
-            ]
-        )
-    parts.append("</svg>")
-    output = FIGURES_DIR / "average_petal_length.svg"
-    output.write_text("\n".join(parts), encoding="utf-8")
+
+    species = list(averages)
+    values = [averages[name] for name in species]
+    colors = [COLORS.get(name, "#555555") for name in species]
+    output = FIGURES_DIR / "average_petal_length.png"
+
+    plt.figure(figsize=(8, 5))
+    bars = plt.bar(species, values, color=colors)
+    plt.title("Average Petal Length by Species")
+    plt.xlabel("Species")
+    plt.ylabel("Average petal length")
+    plt.bar_label(bars, fmt="%.2f", padding=3)
+    plt.tight_layout()
+    plt.savefig(output, dpi=150)
+    plt.close()
     return output
 
 
 def save_scatter_plot(rows: list[dict[str, str]]) -> Path:
-    width, height = 760, 500
-    left, top, plot_width, plot_height = 90, 70, 590, 340
-    xs = [float(row["petal_length"]) for row in rows]
-    ys = [float(row["petal_width"]) for row in rows]
-    min_x, max_x = min(xs), max(xs)
-    min_y, max_y = min(ys), max(ys)
+    groups = grouped_rows(rows)
+    output = FIGURES_DIR / "petal_length_vs_width.png"
 
-    def scale_x(value: float) -> float:
-        return left + ((value - min_x) / (max_x - min_x)) * plot_width
-
-    def scale_y(value: float) -> float:
-        return top + plot_height - ((value - min_y) / (max_y - min_y)) * plot_height
-
-    parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
-        '<rect width="100%" height="100%" fill="#ffffff"/>',
-        '<text x="380" y="38" text-anchor="middle" font-family="Arial" font-size="24" font-weight="700">Petal Length vs Petal Width</text>',
-        f'<line x1="{left}" y1="{top}" x2="{left}" y2="{top + plot_height}" stroke="#333"/>',
-        f'<line x1="{left}" y1="{top + plot_height}" x2="{left + plot_width}" y2="{top + plot_height}" stroke="#333"/>',
-        '<text x="385" y="470" text-anchor="middle" font-family="Arial" font-size="16">Petal length</text>',
-        '<text x="24" y="250" text-anchor="middle" font-family="Arial" font-size="16" transform="rotate(-90 24 250)">Petal width</text>',
-    ]
-    for row in rows:
-        species = row["species"]
-        x = scale_x(float(row["petal_length"]))
-        y = scale_y(float(row["petal_width"]))
-        parts.append(
-            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{COLORS.get(species, "#555555")}" opacity="0.82"/>'
+    plt.figure(figsize=(8, 5))
+    for species, species_rows in groups.items():
+        xs = [float(row["petal_length"]) for row in species_rows]
+        ys = [float(row["petal_width"]) for row in species_rows]
+        plt.scatter(
+            xs,
+            ys,
+            label=species,
+            color=COLORS.get(species, "#555555"),
+            alpha=0.8,
         )
-    for index, species in enumerate(COLORS):
-        legend_y = 95 + index * 24
-        parts.append(f'<circle cx="705" cy="{legend_y}" r="6" fill="{COLORS[species]}"/>')
-        parts.append(
-            f'<text x="718" y="{legend_y + 5}" font-family="Arial" font-size="14">{species}</text>'
-        )
-    parts.append("</svg>")
-    output = FIGURES_DIR / "petal_length_vs_width.svg"
-    output.write_text("\n".join(parts), encoding="utf-8")
+    plt.title("Petal Length vs Petal Width")
+    plt.xlabel("Petal length")
+    plt.ylabel("Petal width")
+    plt.legend(title="Species")
+    plt.tight_layout()
+    plt.savefig(output, dpi=150)
+    plt.close()
     return output
 
 

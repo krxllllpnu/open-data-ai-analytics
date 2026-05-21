@@ -1,0 +1,38 @@
+name: CI Self-Hosted
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-existing-scripts:
+    name: Run existing scripts on self-hosted runner
+    runs-on: self-hosted
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create artifacts directory
+        run: python -c "from pathlib import Path; Path('artifacts').mkdir(exist_ok=True)"
+
+      - name: Run data loading module
+        run: python src/data_load.py 2>&1 | tee artifacts/data_load-selfhosted.log
+
+      - name: Run data quality module
+        run: python src/data_quality_analysis.py 2>&1 | tee artifacts/data_quality-selfhosted.log
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: selfhosted-data-load-artifacts
+          path: |
+            artifacts/
+            data/processed/

@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  run-module:
+    name: Run ${{ matrix.module }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - module: data_load
+            script: src/data_load.py
+            prepare_data: false
+          - module: data_quality
+            script: src/data_quality_analysis.py
+            prepare_data: true
+          - module: data_research
+            script: src/data_research.py
+            prepare_data: true
+          - module: visualization
+            script: src/visualization.py
+            prepare_data: true
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create artifacts directory
+        run: mkdir -p artifacts
+
+      - name: Prepare dataset
+        if: matrix.prepare_data == true
+        run: python src/data_load.py > artifacts/prepare-data.log 2>&1
+
+      - name: Run selected module
+        run: python ${{ matrix.script }} 2>&1 | tee artifacts/${{ matrix.module }}.log
+
+      - name: Collect generated outputs
+        run: |
+          mkdir -p artifacts/processed artifacts/figures
+          cp -r data/processed/* artifacts/processed/ 2>/dev/null || true
+          cp -r reports/figures/* artifacts/figures/ 2>/dev/null || true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.module }}-artifacts
+          path: artifacts/
