@@ -24,10 +24,10 @@ jobs:
         run: python -c "from pathlib import Path; Path('artifacts').mkdir(exist_ok=True)"
 
       - name: Run data loading module
-        run: python src/data_load.py 2>&1 | tee artifacts/data_load-selfhosted.log
+        run: python data_load/app.py 2>&1 | tee artifacts/data_load-selfhosted.log
 
       - name: Run data quality module
-        run: python src/data_quality_analysis.py 2>&1 | tee artifacts/data_quality-selfhosted.log
+        run: python data_quality_analysis/app.py 2>&1 | tee artifacts/data_quality-selfhosted.log
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -35,4 +35,4 @@ jobs:
           name: selfhosted-data-load-artifacts
           path: |
             artifacts/
-            data/processed/
+            reports/

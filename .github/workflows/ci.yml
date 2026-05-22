@@ -19,16 +19,16 @@ jobs:
       matrix:
         include:
           - module: data_load
-            script: src/data_load.py
+            script: data_load/app.py
             prepare_data: false
           - module: data_quality
-            script: src/data_quality_analysis.py
+            script: data_quality_analysis/app.py
             prepare_data: true
           - module: data_research
-            script: src/data_research.py
+            script: data_research/app.py
             prepare_data: true
           - module: visualization
-            script: src/visualization.py
+            script: visualization/app.py
             prepare_data: true
 
     steps:
@@ -48,16 +48,16 @@ jobs:
 
       - name: Prepare dataset
         if: matrix.prepare_data == true
-        run: python src/data_load.py > artifacts/prepare-data.log 2>&1
+        run: python data_load/app.py > artifacts/prepare-data.log 2>&1
 
       - name: Run selected module
         run: python ${{ matrix.script }} 2>&1 | tee artifacts/${{ matrix.module }}.log
 
       - name: Collect generated outputs
         run: |
-          mkdir -p artifacts/processed artifacts/figures
-          cp -r data/processed/* artifacts/processed/ 2>/dev/null || true
-          cp -r reports/figures/* artifacts/figures/ 2>/dev/null || true
+          mkdir -p artifacts/reports artifacts/plots
+          cp -r reports/* artifacts/reports/ 2>/dev/null || true
+          cp -r plots/* artifacts/plots/ 2>/dev/null || true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
