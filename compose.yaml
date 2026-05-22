@@ -1,0 +1,91 @@
+services:
+  data_load:
+    build:
+      context: .
+      dockerfile: data_load/Dockerfile
+    environment:
+      DATASET_PATH: ${DATASET_PATH:-/app/data/dataset.csv}
+      DB_PATH: ${DB_PATH:-/app/db/project.db}
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
+    volumes:
+      - ./data:/app/data
+      - ./db:/app/db
+      - ./reports:/app/reports
+    networks:
+      - analytics-net
+
+  data_quality_analysis:
+    build:
+      context: .
+      dockerfile: data_quality_analysis/Dockerfile
+    environment:
+      DB_PATH: ${DB_PATH:-/app/db/project.db}
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
+    volumes:
+      - ./db:/app/db
+      - ./reports:/app/reports
+    depends_on:
+      data_load:
+        condition: service_completed_successfully
+    networks:
+      - analytics-net
+
+  data_research:
+    build:
+      context: .
+      dockerfile: data_research/Dockerfile
+    environment:
+      DB_PATH: ${DB_PATH:-/app/db/project.db}
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
+    volumes:
+      - ./db:/app/db
+      - ./reports:/app/reports
+    depends_on:
+      data_load:
+        condition: service_completed_successfully
+    networks:
+      - analytics-net
+
+  visualization:
+    build:
+      context: .
+      dockerfile: visualization/Dockerfile
+    environment:
+      DB_PATH: ${DB_PATH:-/app/db/project.db}
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
+      PLOTS_DIR: ${PLOTS_DIR:-/app/plots}
+    volumes:
+      - ./db:/app/db
+      - ./reports:/app/reports
+      - ./plots:/app/plots
+    depends_on:
+      data_load:
+        condition: service_completed_successfully
+    networks:
+      - analytics-net
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    environment:
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
+      PLOTS_DIR: ${PLOTS_DIR:-/app/plots}
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    volumes:
+      - ./reports:/app/reports
+      - ./plots:/app/plots
+    depends_on:
+      data_quality_analysis:
+        condition: service_completed_successfully
+      data_research:
+        condition: service_completed_successfully
+      visualization:
+        condition: service_completed_successfully
+    networks:
+      - analytics-net
+
+networks:
+  analytics-net:
+    driver: bridge
