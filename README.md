@@ -22,19 +22,60 @@ This project uses GitHub Actions for a simple Python CI/CD lab pipeline.
 
 The main workflow is defined in `.github/workflows/ci.yml`. It runs on pushes to `main`, pull requests targeting `main`, and manual `workflow_dispatch` runs. The workflow uses `ubuntu-latest`, installs dependencies from `requirements.txt`, and runs a matrix mapped to the existing project scripts:
 
-- `src/data_load.py`
-- `src/data_quality_analysis.py`
-- `src/data_research.py`
-- `src/visualization.py`
+- `data_load/app.py`
+- `data_quality_analysis/app.py`
+- `data_research/app.py`
+- `visualization/app.py`
 
-The source dataset is downloaded once by `src/data_load.py` into `data/raw/iris.csv`. Processed tabular outputs and text reports are saved in `data/processed/`, while charts are saved in `reports/figures/`. The `artifacts/` directory is used by GitHub Actions for CI logs and copied final outputs uploaded with `actions/upload-artifact`.
+The source dataset for the Docker lab is stored in `data/dataset.csv`. The data loading module imports it into SQLite at `db/project.db`. Reports are saved in `reports/`, charts are saved in `plots/`, and the `artifacts/` directory is used by GitHub Actions for CI logs and copied final outputs uploaded with `actions/upload-artifact`.
 
 To run the workflow manually, open the repository on GitHub, go to **Actions**, select **CI**, and click **Run workflow**.
 
 Produced artifacts include:
 
 - CI log files for each matrix module
-- copied processed outputs from `data/processed/`
-- copied charts from `reports/figures/`
+- copied processed outputs, reports, and plots
 
-The self-hosted runner workflow is defined in `.github/workflows/ci-selfhosted.yml`. It runs only manually and is intended to demonstrate how the same project can be executed on a configured self-hosted GitHub Actions runner. It runs `src/data_load.py` and `src/data_quality_analysis.py`, then uploads logs and processed outputs as artifacts.
+The self-hosted runner workflow is defined in `.github/workflows/ci-selfhosted.yml`. It runs only manually and is intended to demonstrate how the same project can be executed on a configured self-hosted GitHub Actions runner. It runs `data_load/app.py` and `data_quality_analysis/app.py`, then uploads logs and generated reports as artifacts.
+
+## Docker Images and Containers
+
+This lab containerizes the project as a small multi-service analytics system. Docker Compose builds and runs separate containers for data loading, data quality analysis, data research, visualization, and a Flask web interface.
+
+## Docker Services
+
+- `data_load` reads `data/dataset.csv`, creates `db/project.db`, imports the dataset into SQLite, and writes `reports/data_load_report.json`.
+- `data_quality_analysis` reads SQLite data, checks missing values, duplicates, numeric values, and species values, then writes `reports/data_quality_report.json`.
+- `data_research` reads SQLite data, calculates descriptive statistics and correlation, then writes `reports/data_research_report.json`.
+- `visualization` reads SQLite data, creates two matplotlib PNG charts, and writes `reports/visualization_report.json`.
+- `web` runs a Flask dashboard that displays reports and generated charts.
+
+## Running with Docker Compose
+
+Run the full project from the repository root:
+
+```powershell
+docker compose up --build
+```
+
+Open the web interface:
+
+```text
+http://localhost:8080
+```
+
+The web service uses port `8080` by default. You can copy `.env.example` to `.env` and change `WEB_PORT` if needed.
+
+Generated files are stored in:
+
+- SQLite database: `db/project.db`
+- JSON reports: `reports/*.json`
+- PNG plots: `plots/*.png`
+
+Useful checks:
+
+```powershell
+docker compose config
+docker compose ps
+docker compose down
+```
