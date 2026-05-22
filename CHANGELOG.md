@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.3.0
+
+Docker containerization lab release.
+
+- Added Dockerfiles for data loading, data quality analysis, data research, visualization, and web services.
+- Added `compose.yaml` for running the full project with Docker Compose.
+- Configured shared volumes for data, database, reports, and plots.
+- Added SQLite database support for storing imported dataset records.
+- Updated data quality analysis and data research modules to generate JSON reports.
+- Added Flask web dashboard for viewing reports and generated plots.
+- Added `.env.example` with Docker-related environment variables.
+- Updated `.gitignore` for generated database, report, and plot artifacts.
+- Updated README with Docker Compose run instructions and lab documentation.
+
 ## v0.2.0
 
 CI/CD lab release.
