@@ -9,3 +9,8 @@ db/*.db
 reports/*.json
 reports/*.txt
 plots/*.png
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/*.tfplan
