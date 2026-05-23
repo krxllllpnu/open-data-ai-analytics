@@ -79,3 +79,100 @@ docker compose config
 docker compose ps
 docker compose down
 ```
+
+## Azure Deployment with Terraform
+
+This project can also be deployed to Azure with Terraform from Azure Cloud Shell. Terraform creates the Azure infrastructure, and cloud-init prepares the VM by installing Docker, cloning the GitHub repository, and starting the Docker Compose project with `compose.yaml`.
+
+Terraform creates:
+
+- resource group
+- virtual network and subnet
+- public IP address
+- network security group
+- network interface
+- Linux virtual machine
+
+Default project values:
+
+- region: `swedencentral`
+- VM size: `Standard_B2s_v2`
+- app port: `8080`
+- compose file: `compose.yaml`
+
+### Open Azure Cloud Shell
+
+1. Open the Azure Portal.
+2. Click the Cloud Shell icon.
+3. Choose **Bash**.
+4. Select subscription (**Azure for Students** for example).
+5. Use ephemeral Cloud Shell if persistent storage is not required.
+
+### Apply Infrastructure
+
+Go to the Terraform directory:
+
+```bash
+cd infra/terraform
+```
+
+Initialize, format, and validate Terraform:
+
+```bash
+terraform init
+terraform fmt
+terraform validate
+```
+
+Generate an SSH key if needed:
+
+```bash
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+```
+
+Apply the infrastructure:
+
+```bash
+terraform apply -var="ssh_public_key_path=$HOME/.ssh/id_rsa.pub"
+```
+
+Confirm the apply step with `yes`.
+
+### Check the Deployment
+
+Use Terraform outputs to find:
+
+- `public_ip`
+- `web_url`
+- `ssh_command`
+
+Open `web_url` in a browser. You can also check the web service from Cloud Shell:
+
+```bash
+curl http://<PUBLIC_IP>:8080
+```
+
+Optionally SSH into the VM:
+
+```bash
+ssh azureuser@<PUBLIC_IP>
+```
+
+Check Docker containers on the VM:
+
+```bash
+sudo docker ps
+cd /opt/app/project
+sudo docker compose -f compose.yaml ps
+```
+
+### Destroy Infrastructure
+
+To remove the Azure resources, go back to the Terraform directory:
+
+```bash
+cd infra/terraform
+terraform destroy -var="ssh_public_key_path=$HOME/.ssh/id_rsa.pub"
+```
+
+Confirm with `yes`. Destroying the infrastructure is important to avoid consuming Azure credits.

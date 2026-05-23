@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.4.0
+
+Azure Terraform deployment lab release.
+
+- Added Terraform configuration under `infra/terraform` for Azure infrastructure provisioning.
+- Added Azure resources for the deployment: resource group, virtual network, subnet, public IP, network security group, network interface, and Linux virtual machine.
+- Configured cloud-init to install Docker, clone the GitHub repository, and start the project with Docker Compose.
+- Updated deployment defaults for Azure for Students: `swedencentral` region and `Standard_B2s_v2` VM size.
+- Configured the deployment to use the existing `compose.yaml` file and expose the web interface on port `8080`.
+- Added Terraform outputs for `public_ip`, `web_url`, and `ssh_command`.
+- Updated `.gitignore` rules for Terraform state, plans, lock files, and provider cache directories.
+- Updated README with Azure Cloud Shell, Terraform apply, verification, and destroy instructions.
+
 ## v0.3.0
 
 Docker containerization lab release.
