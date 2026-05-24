@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.5.0
+
+Monitoring and observability lab release.
+
+- Added a Prometheus and Grafana monitoring stack under `monitoring`.
+- Added a separate Docker Compose file for monitoring services: Prometheus, Grafana, Node Exporter, and cAdvisor.
+- Configured Prometheus to scrape metrics from Prometheus, Node Exporter, and cAdvisor.
+- Added Grafana provisioning for the Prometheus data source.
+- Added Azure Network Security Group rules for Grafana on port `3000` and Prometheus on port `9090`.
+- Updated cloud-init automation to start the monitoring stack on VM provisioning.
+- Added VM and container monitoring dashboards in Grafana for CPU, memory, disk usage, running containers, and active Prometheus targets.
+- Updated README with monitoring startup, access, and verification instructions.
+
 ## v0.4.0
 
 Azure Terraform deployment lab release.
