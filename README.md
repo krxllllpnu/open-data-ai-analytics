@@ -176,3 +176,32 @@ terraform destroy -var="ssh_public_key_path=$HOME/.ssh/id_rsa.pub"
 ```
 
 Confirm with `yes`. Destroying the infrastructure is important to avoid consuming Azure credits.
+
+## Monitoring
+
+The project includes a simple monitoring stack for an Azure Linux VM with Docker installed. The stack contains:
+
+- Prometheus for metrics collection
+- Grafana for dashboards
+- Node Exporter for VM-level metrics
+- cAdvisor for Docker container metrics
+
+Start monitoring from the repository root:
+
+```bash
+cd monitoring
+docker compose -f docker-compose.monitoring.yml up -d
+```
+
+Open the monitoring tools in a browser:
+
+- Grafana: `http://PUBLIC_IP:3000`
+- Prometheus: `http://PUBLIC_IP:9090`
+
+The default Grafana login is:
+
+```text
+admin / admin
+```
+
+Grafana is provisioned automatically with Prometheus as the default datasource at `http://prometheus:9090`.
