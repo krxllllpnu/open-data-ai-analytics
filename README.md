@@ -40,7 +40,7 @@ The self-hosted runner workflow is defined in `.github/workflows/ci-selfhosted.y
 
 ## Docker Images and Containers
 
-This lab containerizes the project as a small multi-service analytics system. Docker Compose builds and runs separate containers for data loading, data quality analysis, data research, visualization, and a Flask web interface.
+This lab containerizes the project as a small multi-service analytics system. Docker Compose builds and runs separate containers for data loading, data quality analysis, data research, visualization, and an optional local Flask web interface.
 
 ## Docker Services
 
@@ -48,23 +48,37 @@ This lab containerizes the project as a small multi-service analytics system. Do
 - `data_quality_analysis` reads SQLite data, checks missing values, duplicates, numeric values, and species values, then writes `reports/data_quality_report.json`.
 - `data_research` reads SQLite data, calculates descriptive statistics and correlation, then writes `reports/data_research_report.json`.
 - `visualization` reads SQLite data, creates two matplotlib PNG charts, and writes `reports/visualization_report.json`.
-- `web` runs a Flask dashboard that displays reports and generated charts.
+- `web` runs a Flask dashboard that displays reports and generated charts. It is assigned to the `local-web` profile, so it is not started by default.
 
 ## Running with Docker Compose
 
-Run the full project from the repository root:
+Run the default batch pipeline from the repository root:
 
 ```powershell
-docker compose up --build
+docker compose up
 ```
 
-Open the web interface:
+This starts the data loading, quality analysis, research, and visualization services. It does not start the local web container.
+
+To start only the local web service explicitly:
+
+```powershell
+docker compose --profile local-web up web
+```
+
+To start the batch pipeline and local web service together:
+
+```powershell
+docker compose --profile local-web up
+```
+
+Open the local web interface:
 
 ```text
 http://localhost:8080
 ```
 
-The web service uses port `8080` by default. You can copy `.env.example` to `.env` and change `WEB_PORT` if needed.
+The local web service uses port `8080` by default. You can copy `.env.example` to `.env` and change `WEB_PORT` if needed.
 
 Generated files are stored in:
 
@@ -82,7 +96,7 @@ docker compose down
 
 ## Azure Deployment with Terraform
 
-This project can also be deployed to Azure with Terraform from Azure Cloud Shell. Terraform creates the Azure infrastructure, and cloud-init prepares the VM by installing Docker, cloning the GitHub repository, and starting the Docker Compose project with `compose.yaml`.
+This project can also be deployed to Azure with Terraform from Azure Cloud Shell. Terraform creates the Azure infrastructure, and cloud-init prepares the VM by installing Docker, cloning the GitHub repository, and starting the Docker Compose batch pipeline with `compose.yaml`.
 
 Terraform creates:
 
@@ -97,7 +111,8 @@ Default project values:
 
 - region: `swedencentral`
 - VM size: `Standard_B2s_v2`
-- app port: `8080`
+- Docker Compose local web port: `8080`
+- GitOps NodePort web port: `30080`
 - compose file: `compose.yaml`
 
 ### Open Azure Cloud Shell
@@ -144,12 +159,21 @@ Use Terraform outputs to find:
 
 - `public_ip`
 - `web_url`
+- `gitops_app_url`
 - `ssh_command`
 
-Open `web_url` in a browser. You can also check the web service from Cloud Shell:
+In the GitOps VM scenario, open the Kubernetes NodePort web app in a browser:
+
+```text
+http://<PUBLIC_IP>:30080
+```
+
+Docker Compose on the VM is used for generating the data, reports, and plots. The web app is served by Kubernetes and Argo CD, not by the Docker Compose web port.
+
+You can also check the GitOps web app from Cloud Shell:
 
 ```bash
-curl http://<PUBLIC_IP>:8080
+curl http://<PUBLIC_IP>:30080
 ```
 
 Optionally SSH into the VM:

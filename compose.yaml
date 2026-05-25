@@ -65,6 +65,7 @@ services:
       - analytics-net
 
   web:
+    profiles: ["local-web"]
     build:
       context: .
       dockerfile: web/Dockerfile
