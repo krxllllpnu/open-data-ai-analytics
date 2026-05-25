@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.6.0
+
+GitOps and Argo CD deployment lab release.
+
+- Added Kubernetes manifests under `gitops/app` for the web application namespace, Deployment, and NodePort Service.
+- Added an Argo CD Application manifest under `gitops/argocd` to synchronize the Kubernetes application state from the `prod` branch.
+- Added k3s and Argo CD bootstrap scripts under `scripts`.
+- Updated Terraform and cloud-init automation to provision a GitOps-ready Azure VM, clone the deployment branch, install k3s, install Argo CD, and apply the GitOps Application.
+- Added GitHub Actions workflow for building and publishing the web Docker image to GitHub Container Registry.
+- Updated the Docker Compose setup so the web service is optional for local development while the VM GitOps scenario runs web through Kubernetes.
+- Kept the batch data pipeline containers in Docker Compose and shared generated `reports` and `plots` with the Kubernetes web pod.
+- Added Grafana dashboard provisioning with a committed dashboard JSON file to restore dashboards automatically after VM recreation.
+- Added Terraform output and Network Security Group support for the GitOps web NodePort.
+- Fixed cloud-init bootstrap issues related to unset `HOME`, robust script paths, and Argo CD CRD installation.
+- Updated README with GitOps, GHCR, k3s, Argo CD, `prod` branch and verification.
+
 ## v0.5.0
 
 Monitoring and observability lab release.
