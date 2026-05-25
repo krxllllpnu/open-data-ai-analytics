@@ -8,6 +8,11 @@ output "web_url" {
   value       = "http://${azurerm_public_ip.public_ip.ip_address}:${var.app_port}"
 }
 
+output "gitops_app_url" {
+  description = "URL for checking the Argo CD managed Kubernetes NodePort web service."
+  value       = "http://${azurerm_public_ip.public_ip.ip_address}:${var.gitops_node_port}"
+}
+
 output "ssh_command" {
   description = "SSH command for optional manual debugging."
   value       = "ssh ${var.admin_username}@${azurerm_public_ip.public_ip.ip_address}"
