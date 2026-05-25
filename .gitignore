@@ -1,15 +1,59 @@
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Jupyter
 .ipynb_checkpoints/
-.idea/
+
+# Virtual environments and local env files
 .venv/
+venv/
+env/
+ENV/
 .env
-*.pyc
+.env.*
+!.env.example
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Project runtime outputs
 artifacts/
 db/*.db
+db/*.sqlite
+db/*.sqlite3
 reports/*.json
 reports/*.txt
 plots/*.png
+data/raw/
+
+# Logs
+*.log
+logs/
+
+# Terraform local state and plans
 **/.terraform/
 **/terraform.tfstate
-**/terraform.tfstate.backup
+**/terraform.tfstate.*
 **/*.tfplan
+**/*.tfvars
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Docker Compose local overrides
+docker-compose.override.yml
+compose.override.yaml
+compose.override.yml
