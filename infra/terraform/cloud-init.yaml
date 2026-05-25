@@ -43,6 +43,10 @@ runcmd:
         cd /opt/app/project
       fi
 
+      echo "Installing k3s..."
+      bash scripts/install-k3s.sh
+      echo "k3s installation completed successfully."
+
       echo "Starting main application stack..."
       docker compose -f ${compose_file} up -d
       echo "Main application stack started successfully."
@@ -55,3 +59,7 @@ runcmd:
       else
         echo "Monitoring compose file not found. Skipping monitoring stack startup."
       fi
+
+      echo "Installing Argo CD and applying GitOps Application..."
+      PROJECT_DIR=/opt/app/project bash scripts/install-argocd.sh
+      echo "Argo CD GitOps bootstrap completed successfully."

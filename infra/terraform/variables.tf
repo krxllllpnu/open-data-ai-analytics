@@ -1,7 +1,7 @@
 variable "project_name" {
   description = "Prefix for Azure resources."
   type        = string
-  default     = "open-data-ai-lab4"
+  default     = "open-data-ai-analytics"
 }
 
 variable "location" {
@@ -23,7 +23,7 @@ variable "admin_username" {
 }
 
 variable "ssh_public_key_path" {
-  description = "Path to SSH public key in Azure Cloud Shell."
+  description = "Path to SSH public key."
   type        = string
   default     = "~/.ssh/id_rsa.pub"
 }
@@ -44,4 +44,10 @@ variable "app_port" {
   description = "Port exposed by the web interface."
   type        = number
   default     = 8080
+}
+
+variable "gitops_node_port" {
+  description = "NodePort used by the GitOps-managed Kubernetes web service."
+  type        = number
+  default     = 30080
 }
