@@ -12,12 +12,14 @@ fi
 sudo systemctl enable k3s
 sudo systemctl start k3s
 
+USER_HOME="${HOME:-/root}"
+
 echo "Preparing kubeconfig..."
-sudo chmod 644 /etc/rancher/k3s/k3s.yaml
-mkdir -p "$HOME/.kube"
-sudo cp /etc/rancher/k3s/k3s.yaml "$HOME/.kube/config"
-sudo chown "$(id -u):$(id -g)" "$HOME/.kube/config"
-export KUBECONFIG="$HOME/.kube/config"
+mkdir -p "$USER_HOME/.kube"
+sudo cp /etc/rancher/k3s/k3s.yaml "$USER_HOME/.kube/config"
+sudo chown "$(id -u):$(id -g)" "$USER_HOME/.kube/config"
+chmod 600 "$USER_HOME/.kube/config"
+export KUBECONFIG="$USER_HOME/.kube/config"
 
 echo "Waiting for k3s node to become Ready..."
 for attempt in $(seq 1 30); do
