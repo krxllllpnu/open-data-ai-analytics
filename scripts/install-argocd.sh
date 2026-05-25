@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_DIR="${PROJECT_DIR:-$(pwd)}"
-KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="${PROJECT_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+USER_HOME="${HOME:-/root}"
+KUBECONFIG="${KUBECONFIG:-$USER_HOME/.kube/config}"
 export KUBECONFIG
 
+echo "Using kubeconfig: $KUBECONFIG"
 echo "Installing or updating Argo CD..."
+echo "Creating or verifying Argo CD namespace..."
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+echo "Applying Argo CD manifests with server-side apply..."
 kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 echo "Waiting for Argo CD deployments..."
