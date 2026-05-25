@@ -30,18 +30,25 @@ runcmd:
       systemctl start docker
 
       echo "Preparing project repository..."
-      mkdir -p /opt/app
-      if [ -d /opt/app/project/.git ]; then
-        echo "Repository already exists. Pulling latest changes..."
-        cd /opt/app/project
-        git pull --ff-only
-      elif [ -e /opt/app/project ]; then
-        echo "/opt/app/project exists but is not a Git repository. Aborting to avoid overwriting files."
+      PROJECT_DIR="/opt/app/project"
+      REPO_URL="${repo_url}"
+      REPO_BRANCH="prod"
+      echo "Selected repository branch: $REPO_BRANCH"
+      mkdir -p "$(dirname "$PROJECT_DIR")"
+      if [ -d "$PROJECT_DIR/.git" ]; then
+        echo "Repository already exists. Updating branch $REPO_BRANCH..."
+        cd "$PROJECT_DIR"
+        git fetch origin "$REPO_BRANCH"
+        git checkout "$REPO_BRANCH"
+        git pull origin "$REPO_BRANCH"
+      elif [ -e "$PROJECT_DIR" ]; then
+        echo "$PROJECT_DIR exists but is not a Git repository. Aborting to avoid overwriting files."
         exit 1
       else
-        git clone ${repo_url} /opt/app/project
-        cd /opt/app/project
+        git clone --branch "$REPO_BRANCH" --single-branch "$REPO_URL" "$PROJECT_DIR"
+        cd "$PROJECT_DIR"
       fi
+      echo "Current repository commit: $(git rev-parse --short HEAD)"
 
       echo "Installing k3s..."
       bash scripts/install-k3s.sh
@@ -53,7 +60,7 @@ runcmd:
 
       if [ -f monitoring/docker-compose.monitoring.yml ]; then
         echo "Starting monitoring stack..."
-        cd /opt/app/project/monitoring
+        cd "$PROJECT_DIR/monitoring"
         docker compose -f docker-compose.monitoring.yml up -d
         echo "Monitoring stack started successfully."
       else
@@ -61,5 +68,6 @@ runcmd:
       fi
 
       echo "Installing Argo CD and applying GitOps Application..."
-      PROJECT_DIR=/opt/app/project bash scripts/install-argocd.sh
+      cd "$PROJECT_DIR"
+      PROJECT_DIR="$PROJECT_DIR" bash scripts/install-argocd.sh
       echo "Argo CD GitOps bootstrap completed successfully."
