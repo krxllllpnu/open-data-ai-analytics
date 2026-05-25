@@ -205,3 +205,71 @@ admin / admin
 ```
 
 Grafana is provisioned automatically with Prometheus as the default datasource at `http://prometheus:9090`.
+
+## GitOps with Argo CD and k3s
+
+Project uses GitOps to deploy the web application to a k3s cluster on the Azure VM. Argo CD watches the `prod` branch and synchronizes Kubernetes manifests from `gitops/app`.
+
+The `prod` branch is used as the production-like synchronization branch. This keeps day-to-day development separate from the version that Argo CD applies to the cluster.
+
+Create or update the `prod` branch:
+
+```bash
+git checkout main
+git pull
+git checkout -B prod
+git push origin prod
+```
+
+The GitOps manifests are stored in:
+
+- `gitops/app/namespace.yaml`
+- `gitops/app/deployment.yaml`
+- `gitops/app/service.yaml`
+- `gitops/argocd/application.yaml`
+
+The Kubernetes Service uses NodePort `30080`, so the GitOps app URL is:
+
+```text
+http://PUBLIC_IP:30080
+```
+
+Docker image publishing is handled by `.github/workflows/docker-publish.yml`. This workflow is separate from the validation CI workflow. It builds the web container from `web/Dockerfile` and publishes it to GitHub Container Registry on pushes to `main`, pushes to `prod`, and manual workflow runs.
+
+The published image is:
+
+```text
+ghcr.io/krxllllpnu/open-data-ai-analytics
+```
+
+The GitOps Deployment uses the `latest` tag from GHCR:
+
+```text
+ghcr.io/krxllllpnu/open-data-ai-analytics:latest
+```
+
+Argo CD and k3s pull this prebuilt image instead of building the image on the VM.
+
+### Manual k3s and Argo CD Install
+
+If cloud-init was not used, SSH into the VM and run:
+
+```bash
+cd /opt/app/project
+bash scripts/install-k3s.sh
+bash scripts/install-argocd.sh
+kubectl apply -f gitops/argocd/application.yaml
+```
+
+Argo CD itself is not exposed publicly. For manual UI access, use SSH and `kubectl port-forward` if needed.
+
+### Check Sync Status
+
+Check the cluster, Argo CD, and application namespace:
+
+```bash
+kubectl get nodes
+kubectl -n argocd get pods
+kubectl -n argocd get applications
+kubectl -n open-data-ai-analytics get pods,svc
+```
