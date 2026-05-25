@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-data-ai-analytics-web
+  namespace: open-data-ai-analytics
+  labels:
+    app.kubernetes.io/name: open-data-ai-analytics-web
+    app.kubernetes.io/part-of: open-data-ai-analytics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: open-data-ai-analytics-web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: open-data-ai-analytics-web
+        app.kubernetes.io/part-of: open-data-ai-analytics
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/krxllllpnu/open-data-ai-analytics:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: REPORTS_DIR
+              value: /app/reports
+            - name: PLOTS_DIR
+              value: /app/plots
+          volumeMounts:
+            - name: reports-output
+              mountPath: /app/reports
+            - name: plots-output
+              mountPath: /app/plots
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes:
+        - name: reports-output
+          hostPath:
+            path: /opt/app/project/reports
+            type: DirectoryOrCreate
+        - name: plots-output
+          hostPath:
+            path: /opt/app/project/plots
+            type: DirectoryOrCreate
